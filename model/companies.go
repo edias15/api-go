@@ -1,8 +1,8 @@
 package model
 
-//Companies Table of Companies
-type Companies struct {
-	Codempresa int `json:"codempresa" db:"companyid"`
-	Nome string `json:"nome" db:"name"`
-	Cnpjs string `json:"cnpjs" db:"cnpj"`
+//CompaniesFormat format of table: companies
+type CompaniesFormat struct {
+	Codempresa int `json:"companyid" db:"companyid"`
+	Nome string `json:"name" db:"name"`
+	Cnpjs string `json:"cnpj" db:"cnpj"`
 }

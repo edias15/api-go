@@ -5,19 +5,21 @@ import (
 	"net/http"
 	"fmt"
 
-	"github.com/edias15/eXperto/repo"
-  	"github.com/edias15/eXperto/model"
+	"github.com/julienschmidt/httprouter"
+	"github.com/edias15/api-go/repo"
+  	"github.com/edias15/api-go/model"
 )
 
 //Company is function to manipulate route requisition
-func Company(w http.ResponseWriter, r *http.Request) {
-	companies := model.Companies{}
-	companyid, err := strconv.Atoi(r.URL.Path[9:])
-	
+func Company(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+	companies := model.CompaniesFormat{}
+	companyid, err := strconv.Atoi(param.ByName("id"))
+
 	if err != nil {
-		http.Error(w, "It wasn't typed a number.", http.StatusBadRequest)
+		http.Error(w, "It wasn't typed a number for company id.", http.StatusBadRequest)
 		fmt.Println("[company] Error converting string to number:", err.Error())
 	}
+
 	sql := "select companyid, name, cnpj from companies where companyid = $1"
 	line, err := repo.Db.Queryx(sql, companyid)
 	if err != nil {

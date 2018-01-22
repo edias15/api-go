@@ -1,42 +1,57 @@
 package manipulador
 
 import (
-	"strconv"
 	"net/http"
 	"fmt"
-
-	"github.com/edias15/eXperto/repo"
-  	"github.com/edias15/eXperto/model"
+	"strconv"
+	"github.com/julienschmidt/httprouter"
+	"github.com/edias15/api-go/repo"
+  	"github.com/edias15/api-go/model"
 )
 
-//Company is function to manipulate route requisition
-func InsertCompany(w http.ResponseWriter, r *http.Request) {
-	companies := model.Companies{}
-	companyid, err := strconv.Atoi(r.URL.Path[9:])
-	
+//Insertcompany is function to include new company throught json struct
+func Insertcompany(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+	companies := model.CompaniesFormat{}
+
+	id, err := strconv.Atoi(param.ByName("id"))
 	if err != nil {
-		http.Error(w, "It wasn't typed a number.", http.StatusBadRequest)
-		fmt.Println("[company] Error converting string to number:", err.Error())
+		http.Error(w, "Impossible to read company id.", http.StatusInternalServerError)
+		fmt.Println("[insertcompany] Impossible to read parameter id: ", "Erro: ", err.Error())
+		return
 	}
+	name := param.ByName("name")
+	cnpj := param.ByName("cnpj")
+
 	sql := "select companyid, name, cnpj from companies where companyid = $1"
-	line, err := repo.Db.Queryx(sql, companyid)
+	line, err := repo.Db.Queryx(sql, id)
 	if err != nil {
 		http.Error(w, "Impossible search this number.", http.StatusInternalServerError)
-		fmt.Println("[company] Not possible executing query: ", sql, "Erro: ", err.Error())
+		fmt.Println("[insertcompany] Not possible executing query: ", sql, "Erro: ", err.Error())
 		return
 	}
 	for line.Next() {
 		err = line.StructScan(&companies)
-
 		if err != nil {
 			http.Error(w, "Does not possible searching this number",http.StatusInternalServerError)
-			fmt.Println("[company] Not possible binding data in the struct. Erro: ", err.Error())
+			fmt.Println("[insertcompany] Not possible binding data in the struct. Erro: ", err.Error())
 			return
 		}
 	}
-	if err := CompanyModel.ExecuteTemplate(w,"company.html",companies); err != nil {
-		http.Error(w, "Error in page renderization.", http.StatusInternalServerError)
-		fmt.Println("[company] Error executing model", err.Error())
-		return
+	/* if query no results then Codempresa = 0 */
+	if companies.Codempresa != 0 {
+		http.Error(w, "The company id exist in database.", http.StatusInternalServerError)
+		fmt.Println("[insertcompany] The company id exist in database id: ", id)
+	} else {
+		data := map[string]interface{}{
+            "id": id,
+            "name": name,
+			"cnpj": cnpj,
+		}
+		_, err := repo.Db.NamedExec(`insert into companies (companyid, name, cnpj) values (:id, :name, :cnpj)`, data)
+		if err != nil {
+			http.Error(w, "Not possible insert new line into database.", http.StatusInternalServerError)
+			fmt.Println("[insertcompany] Not possible insert new line into database: ", data, "Erro: ", err.Error())
+			return
+		}
 	}
 }
