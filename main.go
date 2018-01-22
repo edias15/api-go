@@ -22,10 +22,8 @@ func main() {
 	router.GET("/",manipulador.Hello)
 	router.GET("/company/:id",manipulador.Company)
 	router.POST("/insertcompany/:id/:name/:cnpj",manipulador.Insertcompany)
-//	router.DELETE("/deletecompany/:id",manipulador.Deletecompany)
+	router.DELETE("/deletecompany/:id",manipulador.Deletecompany)
 
-//	http.HandleFunc("/", manipulador.Hello)
-//	http.HandleFunc("/company/", manipulador.Company)
 	fmt.Println("Estou ouvindo...")
 	http.ListenAndServe(":8181", router)
 }

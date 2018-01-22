@@ -20,7 +20,7 @@ func AbreConexaoComBDPostgres() (err error) {
 	if err != nil {
 		return
 	}
-	defer Db.Close()
+	//defer Db.Close()
 
 	return
 }
